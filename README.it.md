@@ -1,6 +1,12 @@
 # Custom Climate Card per Home Assistant
 
-[![English](https://img.shields.io/badge/Language-English-blue)](README.md) [![Italiano](https://img.shields.io/badge/Lingua-Italiano-green)](README.it.md)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://github.com/hacs/default)
+[![GitHub release](https://img.shields.io/github/v/release/evlas/climate-card?style=flat-square&color=blue)](https://github.com/evlas/climate-card/releases)
+[![HACS Validate](https://img.shields.io/github/actions/workflow/status/evlas/climate-card/validate.yml?label=HACS%20Action&style=flat-square)](https://github.com/evlas/climate-card/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Community Forum](https://img.shields.io/badge/Community-Forum-brightgreen.svg?style=flat-square)](https://community.home-assistant.io/)
+[![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
+[![Italiano](https://img.shields.io/badge/Lingua-Italiano-green?style=flat-square)](README.it.md)
 
 Una card personalizzata per **Home Assistant Lovelace** creata per essere **del tutto identica alla card standard Thermostat** di Home Assistant, arricchita con un layout perfettamente integrato (all-in-one):
 - **Finestre e Balconi integrati all'interno della ghiera**: posizionati in colonna verticale a destra della temperatura, con cambio icona e colore rosso/allarme se aperti.
