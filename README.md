@@ -10,6 +10,8 @@
 
 An all-in-one custom Lovelace card for **Home Assistant** designed to match the exact visual style, proportions, geometry, and colors of the official Home Assistant **Thermostat Card** (`hui-thermostat-card`), while seamlessly integrating room sensors and custom controls directly into the dial.
 
+![Climate Card Preview](images/preview.png)
+
 ---
 
 ### 💡 Why This Card? (Solving the KNX Thermostat Challenge)

@@ -10,6 +10,8 @@
 
 Una card personalizzata per **Home Assistant Lovelace** creata per essere **del tutto identica alla card standard Thermostat** di Home Assistant, arricchita con un layout perfettamente integrato (all-in-one).
 
+![Anteprima Climate Card](images/preview.png)
+
 ---
 
 ### 💡 Perché nasce questa card? (Il problema dei termostati KNX)
