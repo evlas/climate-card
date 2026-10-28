@@ -15,11 +15,11 @@
  * - Cleanly integrated fixtures (balconies, windows) with open alert pulse (#ef4444)
  * - Cleanly integrated zone valve (sensor, number, valve entity with percentage/state)
  * - Segmented feature bar for presets and HVAC modes matching hui-card-features
- * - Full KNX 1-bit step (+ / -) & reset support, custom scripts, and native HA climate services
+ * - Universal events (+ / - / Reset) for scripts, buttons, and switches, plus native HA climate services
  * - Visual UI Editor support (ha-form schema)
  */
 
-const CARD_VERSION = "2.0.0";
+const CARD_VERSION = "2.1.0";
 
 console.info(
   `%c CLIMATE-CARD %c v${CARD_VERSION} `,
@@ -230,7 +230,6 @@ class ClimateCard extends HTMLElement {
       min_temp: config.min_temp,
       max_temp: config.max_temp,
       show_current_as_primary: config.show_current_as_primary !== false, // Default: true (Temperatura Attuale grande)
-      knx_step_address: config.knx_step_address || config.knx_address,
       event_up: eventUp,
       event_down: eventDown,
       event_reset: eventReset,
@@ -564,24 +563,8 @@ class ClimateCard extends HTMLElement {
     }
   }
 
-  _sendKnxStep(payload) {
-    if (!this._hass) return;
-    const address = this._config.knx_step_address;
-    if (!address) return;
-    this._hass.callService("knx", "send", {
-      address: address,
-      payload: payload
-    });
-  }
-
   _changeTempStep(delta) {
-    // 1. KNX 1-bit step address
-    if (this._config.knx_step_address) {
-      this._sendKnxStep(delta > 0 ? 1 : 0);
-      return;
-    }
-
-    // 2. Custom Events (script, button, switch, etc.)
+    // 1. Custom Events (script, button, switch, etc.)
     const upTarget = this._config.event_up || this._config.script_up;
     const downTarget = this._config.event_down || this._config.script_down;
 
@@ -1426,8 +1409,8 @@ class ClimateCard extends HTMLElement {
       };
 
       sliderSvg.addEventListener("pointerdown", (e) => {
-        // Prevent continuous touch drag if KNX step or disable_slider is configured
-        if (this._config.disable_slider || (this._config.knx_step_address && this._config.disable_slider !== false)) {
+        // Prevent continuous touch drag if custom step events or disable_slider is configured
+        if (this._config.disable_slider || ((this._config.event_up || this._config.script_up) && this._config.disable_slider !== false)) {
           return;
         }
         this._isDragging = true;
@@ -1514,10 +1497,6 @@ class ClimateCardEditor extends HTMLElement {
         selector: { boolean: {} }
       },
       {
-        name: "knx_step_address",
-        selector: { text: {} }
-      },
-      {
         name: "event_up",
         selector: { entity: { domain: ["script", "button", "switch", "input_button"] } }
       },
@@ -1542,7 +1521,6 @@ class ClimateCardEditor extends HTMLElement {
       balconies: "Balconi / Portefinestre (Binary Sensor)",
       humidity_entity: "Sensore Umidità (Opzionale)",
       show_current_as_primary: "Temperatura Attuale grande al centro (e Setpoint sotto)",
-      knx_step_address: "Indirizzo KNX Step 1-bit (es. 2/2/2)",
       event_up: "Azione Aumento Setpoint (+) [Script / Button / Switch]",
       event_down: "Azione Diminuzione Setpoint (−) [Script / Button / Switch]",
       event_reset: "Azione Reset Setpoint (↻) [Script / Button / Switch]"

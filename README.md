@@ -15,7 +15,6 @@ An all-in-one custom Lovelace card for **Home Assistant** designed to match the 
 - **Towel Heater (Bathroom)**: Positioned specularly in the lower-left corner with heating coil icon (`mdi:heating-coil`). Clicking toggles the heater on or off.
 - **Ambient Humidity**: Neatly displayed under the temperature with a droplet icon (e.g. `💧 52%`).
 - **Universal Step & Reset Events (`event_up`, `event_down`, `event_reset`)**: Easily trigger any `script.*`, `button.*`, `switch.*`, or `input_button.*` when pressing `+`, `−`, or the header Reset `↻` button.
-- **Direct KNX 1-Bit Step Support**: Direct telegram control (`knx_step_address`) for KNX thermostats without needing custom scripts.
 - **Official Home Assistant Dashboard Features**: Full compatibility with the official [Home Assistant Dashboard Features](https://www.home-assistant.io/dashboards/features) specification (`climate-preset-modes` and `climate-hvac-modes`).
 - **Visual UI Editor**: Fully configurable via the Home Assistant card editor UI (`ha-form`) or raw YAML.
 
@@ -77,7 +76,6 @@ The stepper buttons (`+`, `−`) and the Reset button (`↻`, permanently locate
 | `event_up` | `string` | No | Entity called when `+` is clicked (`script.*`, `button.*`, `switch.*`, etc.). |
 | `event_down` | `string` | No | Entity called when `−` is clicked (`script.*`, `button.*`, `switch.*`, etc.). |
 | `event_reset` | `string` | No | Entity called when Reset `↻` is clicked (`script.*`, `button.*`, `switch.*`, etc.). |
-| `knx_step_address` | `string` | No | KNX 1-bit group address (e.g. `"2/2/2"`). Sends `1` for up and `0` for down. |
 
 #### Integrated Room Sensors & Fixtures
 
@@ -187,13 +185,14 @@ features:
       - building_protection
 ```
 
-### 3. Direct KNX 1-Bit Step Control
+### 3. Thermostat with Button Entities (`button.living_room_up`, `button.living_room_down`)
 ```yaml
 type: custom:climate-card
 entity: climate.living_room
 name: Living Room
-knx_step_address: "2/2/2"                   # sends 1 on up (+), 0 on down (−)
-event_reset: script.reset_living_room
+event_up: button.living_room_up              # calls button.press
+event_down: button.living_room_down          # calls button.press
+event_reset: button.living_room_reset
 valve_entity: sensor.living_room_valve
 features:
   - type: climate-preset-modes

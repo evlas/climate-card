@@ -5,9 +5,8 @@
 Una card personalizzata per **Home Assistant Lovelace** creata per essere **del tutto identica alla card standard Thermostat** di Home Assistant, arricchita con un layout perfettamente integrato (all-in-one):
 - **Finestre e Balconi integrati all'interno della ghiera**: posizionati in colonna verticale a destra della temperatura, con cambio icona e colore rosso/allarme se aperti.
 - **Valvola di zona con percentuale**: posizionata elegantemente in basso a destra all'interno della ghiera con box e valore percentuale (es. `[|/|] 0%`).
-- **Umidità di zona**: visualizzata direttamente sotto la temperatura attuale con icona goccia (es. `💧 52%`).
-- **Regolazione temperatura tramite pulsanti `−` e `+`**: supporta sia il controllo standard Home Assistant, sia telegrammi a scatti KNX a 1-bit (`knx_step_address`), sia script dedicati (`script_up` / `script_down`).
-- **Pulsante di Reset incastonato**: posizionato in basso a destra sopra la barra dei preset.
+- **Regolazione temperatura tramite pulsanti `−` e `+`**: supporta sia il controllo standard Home Assistant, sia eventi personalizzati (`event_up` / `event_down`) per script, pulsanti o switch.
+- **Pulsante di Reset `↻` fisso in alto a destra**: posizionato stabilmente nell'intestazione della card accanto ai tre puntini, per ripristinare il setpoint tramite `event_reset` o aggiornare l'entità.
 - **Doppia modalità Grafica**: Estate (Raffreddamento in azzurro `#71bcf9`) e Inverno (Riscaldamento in arancione `#ff9e6b`).
 - **Supporto Editor Visuale UI**: configurabile sia direttamente dall'interfaccia grafica Lovelace (tramite `<ha-form>`) che via YAML.
 
@@ -56,16 +55,15 @@ Puoi aggiungere la card cliccando su **Aggiungi Card** nella dashboard e cercand
 | `max_temp` | `number` | No | `30` | Limite massimo della scala graduata (se omesso usa `max_temp` dell'entità). |
 | `disable_slider` | `boolean` | No | `false` | Disabilita il trascinamento touch della ghiera (consigliato se si vuole consentire la variazione esclusivamente a scatti tramite `+` e `−`). |
 
-#### Eventi e Integrazioni Hardware (Pulsanti `+`, `−`, `↻`)
+#### Eventi Personalizzati (Pulsanti `+`, `−`, `↻`)
 
-I pulsanti `+`, `−` e il pulsante Reset `↻` (collocato stabilmente in alto a destra nell'intestazione accanto ai tre puntini) possono eseguire qualsiasi entità `script.*`, `button.*`, `switch.*`, `input_button.*` o telegramma KNX:
+I pulsanti `+`, `−` e il pulsante Reset `↻` (collocato stabilmente in alto a destra nell'intestazione accanto ai tre puntini) possono eseguire qualsiasi entità `script.*`, `button.*`, `switch.*`, `input_button.*`:
 
 | Variabile | Tipo | Obbligatorio | Descrizione |
 | :--- | :--- | :--- | :--- |
 | `event_up` | `string` | No | Entità richiamata alla pressione di `+` (`script.salotto_up`, `button.salotto_up`, `switch.boost`, ecc.). |
 | `event_down` | `string` | No | Entità richiamata alla pressione di `−` (`script.salotto_down`, `button.salotto_down`, ecc.). |
 | `event_reset` | `string` | No | Entità richiamata alla pressione del tasto Reset `↻` in alto a destra (`script.reset_salotto`, `button.reset`, ecc.). |
-| `knx_step_address` | `string` | No | Indirizzo di gruppo KNX a 1-bit per incremento/decremento (es. `"2/2/2"`). Invia telegramma `1` con `+` e `0` con `−`. |
 
 #### Sensori Ambiente Integrati
 
@@ -175,13 +173,14 @@ features:
       - building_protection
 ```
 
-### 3. Termostato con Controllo Diretto KNX 1-bit Step
+### 3. Termostato con Entità Button (`button.salotto_up`, `button.salotto_down`)
 ```yaml
 type: custom:climate-card
 entity: climate.salotto
 name: Salotto
-knx_step_address: "2/2/2"                # Invia 1 per incremento e 0 per decremento
-event_reset: script.reset_salotto
+event_up: button.salotto_up              # chiama button.press
+event_down: button.salotto_down          # chiama button.press
+event_reset: button.salotto_reset
 valve_entity: sensor.valvola_salotto
 features:
   - type: climate-preset-modes
