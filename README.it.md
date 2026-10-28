@@ -8,11 +8,32 @@
 [![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
 [![Italiano](https://img.shields.io/badge/Lingua-Italiano-green?style=flat-square)](README.it.md)
 
-Una card personalizzata per **Home Assistant Lovelace** creata per essere **del tutto identica alla card standard Thermostat** di Home Assistant, arricchita con un layout perfettamente integrato (all-in-one):
+Una card personalizzata per **Home Assistant Lovelace** creata per essere **del tutto identica alla card standard Thermostat** di Home Assistant, arricchita con un layout perfettamente integrato (all-in-one).
+
+---
+
+### 💡 Perché nasce questa card? (Il problema dei termostati KNX)
+
+Molti termostati e cronotermostati **KNX** (e impianti di termoregolazione avanzati) gestiscono la temperatura ambiente tramite logiche a variazione di setpoint (**setpoint shift / step up & down**) e richiedono un comando dedicato di **reset dell'offset**, anziché una semplice sovrascrittura del setpoint assoluto:
+
+1. **Il limite della card standard di Home Assistant**: Nella card nativa `thermostat`, i tasti `+` e `−` invocano forzatamente il servizio `climate.set_temperature`. Non è possibile associare script personalizzati di step, né esiste un pulsante per resettare l'offset. Per aggirare questo problema, gli utenti dovevano ricorrere a complessi accrocchi Lovelace (`custom:mod-card`, forzature CSS, stack orizzontali e colonne laterali di `entity-button`).
+2. **Informazioni di zona frammentate**: Una zona termica moderna comprende sensori e attuatori strettamente collegati (valvola elettrotermica di zona con stato/percentuale, termoarredo in bagno, stato di finestre e portefinestre che condizionano la climatizzazione, sensore di umidità). Visualizzarli richiedeva una moltitudine di schede separate.
+
+**Questa card risolve definitivamente entrambi i problemi**:
+- Mantiene **al 100% l'estetica, la geometria e i colori ufficiali** della card Thermostat di Home Assistant.
+- Offre i controlli **`event_up`**, **`event_down`** ed **`event_reset`** compatibili con qualsiasi script, pulsante o switch (ideali per i comandi step e reset KNX).
+- Unifica **valvola di zona con percentuale**, **termoarredo**, **finestre/balconi** con allerta visiva e **umidità** direttamente all'interno della ghiera, eliminando qualsiasi configurazione complessa o codice CSS personalizzato.
+
+---
+
+### ✨ Caratteristiche Principali
+
 - **Finestre e Balconi integrati all'interno della ghiera**: posizionati in colonna verticale a destra della temperatura, con cambio icona e colore rosso/allarme se aperti.
 - **Valvola di zona con percentuale**: posizionata elegantemente in basso a destra all'interno della ghiera con box e valore percentuale (es. `[|/|] 0%`).
 - **Regolazione temperatura tramite pulsanti `−` e `+`**: supporta sia il controllo standard Home Assistant, sia eventi personalizzati (`event_up` / `event_down`) per script, pulsanti o switch.
 - **Pulsante di Reset `↻` fisso in alto a destra**: posizionato stabilmente nell'intestazione della card accanto ai tre puntini, per ripristinare il setpoint tramite `event_reset` o aggiornare l'entità.
+- **Termoarredo / Scaldasalviette per i Bagni**: posizionato a sinistra (speculare alla valvola) con icona `mdi:heating-coil` e toggle al click.
+- **Umidità Ambientale integrata**: visualizzata chiaramente sotto la temperatura con icona goccia.
 - **Doppia modalità Grafica**: Estate (Raffreddamento in azzurro `#71bcf9`) e Inverno (Riscaldamento in arancione `#ff9e6b`).
 - **Supporto Editor Visuale UI**: configurabile sia direttamente dall'interfaccia grafica Lovelace (tramite `<ha-form>`) che via YAML.
 

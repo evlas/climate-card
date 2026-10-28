@@ -8,7 +8,25 @@
 [![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
 [![Italiano](https://img.shields.io/badge/Lingua-Italiano-green?style=flat-square)](README.it.md)
 
-An all-in-one custom Lovelace card for **Home Assistant** designed to match the exact visual style, proportions, geometry, and colors of the official Home Assistant **Thermostat Card** (`hui-thermostat-card`), while seamlessly integrating room sensors and custom controls directly into the dial:
+An all-in-one custom Lovelace card for **Home Assistant** designed to match the exact visual style, proportions, geometry, and colors of the official Home Assistant **Thermostat Card** (`hui-thermostat-card`), while seamlessly integrating room sensors and custom controls directly into the dial.
+
+---
+
+### 💡 Why This Card? (Solving the KNX Thermostat Challenge)
+
+Many **KNX thermostats** and smart climate systems adjust room temperatures using **relative setpoint shifts** (step up/down commands or scripts) and require a dedicated **offset reset** action, rather than directly accepting an absolute target temperature overwrite from Home Assistant:
+
+1. **The Limitation of the Official Thermostat Card**: The default `thermostat` card unconditionally fires `climate.set_temperature` when `+` or `−` is clicked. It offers no way to execute custom step scripts or pulse commands, nor does it provide a button to reset the setpoint/offset. Previously, users were forced into fragile Lovelace workarounds involving `custom:mod-card`, hacky CSS overrides (`hui-horizontal-stack-card$`, `width: 85%`), and side columns of separate `entity-button` cards.
+2. **Fragmented Room Information**: A comprehensive climate zone encompasses multiple interconnected sensors and actuators: electrothermal zone valves (open state / percentage), bathroom towel warmers, windows and balcony doors (which pause heating when opened), and ambient humidity. Monitoring these previously required multiple separate cards or disjointed dashboard stacks.
+
+**Climate Card solves both challenges out of the box**:
+- Maintains **100% fidelity to the official Home Assistant Thermostat design**, geometry, and colors.
+- Provides universal **`event_up`**, **`event_down`**, and **`event_reset`** triggers (supporting scripts, buttons, or switches), tailored for KNX setpoint shifts and offset resets.
+- Unifies **zone valve status with percentage**, **towel heater toggle**, **window/balcony open alerts**, and **room humidity** right inside the dial.
+
+---
+
+### ✨ Key Features
 
 - **1:1 Official Look & Feel**: Built with the authentic 320x320 SVG geometry, circular slider, dynamic color gradients (Heating in `#ff9e6b`, Cooling in `#71bcf9`, Off in `#9e9e9e`), and native typography.
 - **Inverted Display (Current Temp Primary)**: Shows the current room temperature large and prominent at the center (`58px`), with the setpoint temperature cleanly displayed underneath.
