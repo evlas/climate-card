@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Assistant Climate Card - Preview</title>
+  <style>
+    :root {
+      --primary-color: #03a9f4;
+      --ha-card-background: #ffffff;
+      --card-background-color: #ffffff;
+      --primary-text-color: #212121;
+      --secondary-text-color: #727272;
+      --divider-color: #e5e7eb;
+      --state-climate-heat-color: #ff9e6b;
+      --state-climate-cool-color: #71bcf9;
+      --state-climate-off-color: #9e9e9e;
+      --ha-card-border-radius: 14px;
+      --ha-card-border-width: 1px;
+      --ha-card-border-color: #e5e7eb;
+      --ha-card-box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+    }
+
+    .toolbar {
+      max-width: 1300px;
+      margin: 0 auto 24px auto;
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toolbar h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button.tool-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    button.tool-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    button.tool-btn.active {
+      background: #0284c7;
+      border-color: #0284c7;
+      color: white;
+    }
+
+    .grid-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 20px;
+    }
+
+    .card-box {
+      width: 100%;
+    }
+
+    .log-box {
+      max-width: 1300px;
+      margin: 24px auto 0 auto;
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: monospace;
+      font-size: 12px;
+      min-height: 48px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+  </style>
+  <script src="climate-card.js"></script>
+</head>
+<body>
+
+  <div class="toolbar">
+    <h1>
+      <span>🌡️</span> Home Assistant Climate Card
+    </h1>
+
+    <div class="btn-group">
+      <button class="tool-btn active" id="btn-estate">☀️ Modalità Estate (Cooling)</button>
+      <button class="tool-btn" id="btn-inverno">❄️ Modalità Inverno (Heating)</button>
+      <button class="tool-btn" id="btn-toggle-window">🪟 Simula Finestra Aperta</button>
+      <button class="tool-btn" id="btn-toggle-balcony">🚪 Simula Balcone Aperto</button>
+    </div>
+  </div>
+
+  <div class="grid-container">
+    <div class="card-box" id="container-salotto"></div>
+    <div class="card-box" id="container-pranzo"></div>
+    <div class="card-box" id="container-matrimoniale"></div>
+    <div class="card-box" id="container-cameretta"></div>
+  </div>
+
+  <div class="log-box" id="log-box">
+    [Hass Service Logger] In attesa di interazioni...
+  </div>
+
+  <script>
+    // Mock Home Assistant Instance
+    const mockHass = {
+      states: {
+        // Preset modes
+        "climate.salotto": {
+          entity_id: "climate.salotto",
+          state: "cool",
+          attributes: {
+            friendly_name: "Salotto",
+            current_temperature: 22.1,
+            temperature: 24.0,
+            hvac_action: "cooling",
+            hvac_modes: ["off", "cool", "heat", "auto"],
+            preset_modes: ["comfort", "standby", "economy", "building_protection"],
+            preset_mode: "comfort",
+            min_temp: 16,
+            max_temp: 30,
+            target_temp_step: 0.5
+          }
+        },
+        "climate.sala_da_pranzo": {
+          entity_id: "climate.sala_da_pranzo",
+          state: "cool",
+          attributes: {
+            friendly_name: "Sala da Pranzo",
+            current_temperature: 21.9,
+            temperature: 24.0,
+            hvac_action: "cooling",
+            hvac_modes: ["off", "cool", "heat", "auto"],
+            preset_modes: ["comfort", "away", "eco", "boost"],
+            preset_mode: "comfort",
+            min_temp: 16,
+            max_temp: 30,
+            target_temp_step: 0.5
+          }
+        },
+        "climate.camera_matrimoniale": {
+          entity_id: "climate.camera_matrimoniale",
+          state: "cool",
+          attributes: {
+            friendly_name: "Camera Matrimoniale",
+            current_temperature: 22.1,
+            temperature: 24.0,
+            hvac_action: "cooling",
+            hvac_modes: ["off", "cool", "heat", "auto"],
+            preset_modes: ["comfort", "away", "eco", "boost"],
+            preset_mode: "comfort",
+            min_temp: 16,
+            max_temp: 30,
+            target_temp_step: 0.5
+          }
+        },
+        "climate.cameretta_1": {
+          entity_id: "climate.cameretta_1",
+          state: "cool",
+          attributes: {
+            friendly_name: "Cameretta 1",
+            current_temperature: 21.3,
+            temperature: 24.0,
+            hvac_action: "cooling",
+            hvac_modes: ["off", "cool", "heat", "auto"],
+            preset_modes: ["comfort", "away", "eco", "boost"],
+            preset_mode: "comfort",
+            min_temp: 16,
+            max_temp: 30,
+            target_temp_step: 0.5
+          }
+        },
+
+        // Valve Entities
+        "sensor.valvola_salotto": { state: "0%", attributes: { unit_of_measurement: "%" } },
+        "sensor.valvola_pranzo": { state: "0%", attributes: { unit_of_measurement: "%" } },
+        "sensor.valvola_matrimoniale": { state: "0%", attributes: { unit_of_measurement: "%" } },
+        "sensor.valvola_cameretta": { state: "5%", attributes: { unit_of_measurement: "%" } },
+
+        // Fixtures (Balconies & Windows)
+        "binary_sensor.balcone_salotto": { state: "off" },
+        "binary_sensor.finestra_salotto": { state: "off" },
+        "binary_sensor.balcone_pranzo": { state: "off" },
+        "binary_sensor.finestra_pranzo": { state: "off" },
+        "binary_sensor.finestra_matrimoniale": { state: "off" },
+        "binary_sensor.finestra_cameretta": { state: "off" },
+
+        // Humidity Sensors
+        "sensor.umidita_salotto": { state: "52", attributes: { unit_of_measurement: "%" } },
+        "sensor.umidita_pranzo": { state: "48", attributes: { unit_of_measurement: "%" } },
+        "sensor.umidita_matrimoniale": { state: "55", attributes: { unit_of_measurement: "%" } },
+        "sensor.umidita_cameretta": { state: "50", attributes: { unit_of_measurement: "%" } },
+
+        // Towel Heater (Termoarredo)
+        "switch.termoarredi_pt": {
+          state: "on",
+          attributes: { friendly_name: "Termoarredo PT" }
+        }
+      },
+
+      callService: function(domain, service, serviceData) {
+        logAction(`Servizio Chiamato: ${domain}.${service} -> ${JSON.stringify(serviceData || {})}`);
+        
+        // Handle toggle (for termoarredo switch)
+        if (domain === "homeassistant" && service === "toggle") {
+          const entity = mockHass.states[serviceData.entity_id];
+          if (entity) {
+            entity.state = entity.state === "on" ? "off" : "on";
+            logAction(`♨️ Termoarredo (${entity.attributes.friendly_name}): ${entity.state.toUpperCase()}`);
+            notifyCards();
+          }
+          return;
+        }
+
+        // Handle script execution
+        if (domain === "script") {
+          const salotto = mockHass.states["climate.salotto"];
+          if (service === "target_salotto_up") {
+            salotto.attributes.temperature = Math.min(30, salotto.attributes.temperature + 0.5);
+            logAction(`⚡ Script eseguito (+0.5°C): Nuova temp impostata = ${salotto.attributes.temperature}°C`);
+          } else if (service === "target_salotto_down") {
+            salotto.attributes.temperature = Math.max(16, salotto.attributes.temperature - 0.5);
+            logAction(`⚡ Script eseguito (-0.5°C): Nuova temp impostata = ${salotto.attributes.temperature}°C`);
+          } else if (service === "reset_salotto") {
+            salotto.attributes.temperature = 21.0;
+            logAction(`🔄 Script reset eseguito: Setpoint ripristinato a 21.0°C`);
+          }
+          notifyCards();
+          return;
+        }
+
+        // Handle climate state update
+        if (domain === "climate" && service === "set_temperature") {
+          const entity = mockHass.states[serviceData.entity_id];
+          if (entity) {
+            entity.attributes.temperature = serviceData.temperature;
+            notifyCards();
+          }
+        }
+        if (domain === "climate" && service === "set_preset_mode") {
+          const entity = mockHass.states[serviceData.entity_id];
+          if (entity) {
+            entity.attributes.preset_mode = serviceData.preset_mode;
+            notifyCards();
+          }
+        }
+      }
+    };
+
+    function logAction(msg) {
+      const box = document.getElementById("log-box");
+      const time = new Date().toLocaleTimeString();
+      box.innerHTML = `[${time}] ${msg}<br>` + box.innerHTML;
+    }
+
+    // Initialize 4 cards
+    const configs = [
+      {
+        containerId: "container-salotto",
+        config: {
+          type: "custom:climate-card",
+          entity: "climate.salotto",
+          name: "Salotto",
+          event_up: "script.target_salotto_up",
+          event_down: "script.target_salotto_down",
+          event_reset: "script.reset_salotto",
+          valve_entity: "sensor.valvola_salotto",
+          balconies: "binary_sensor.balcone_salotto",
+          windows: "binary_sensor.finestra_salotto",
+          humidity_entity: "sensor.umidita_salotto",
+          features: [
+            {
+              type: "climate-preset-modes",
+              style: "icons",
+              preset_modes: [
+                "comfort",
+                "standby",
+                "economy",
+                "building_protection"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        containerId: "container-pranzo",
+        config: {
+          type: "custom:climate-card",
+          entity: "climate.sala_da_pranzo",
+          name: "Sala da Pranzo",
+          valve_entity: "sensor.valvola_pranzo",
+          balconies: "binary_sensor.balcone_pranzo",
+          windows: "binary_sensor.finestra_pranzo",
+          humidity_entity: "sensor.umidita_pranzo",
+          features: [
+            {
+              type: "climate-hvac-modes",
+              style: "icons",
+              hvac_modes: ["heat", "cool", "auto", "off"]
+            }
+          ]
+        }
+      },
+      {
+        containerId: "container-matrimoniale",
+        config: {
+          type: "custom:climate-card",
+          entity: "climate.camera_matrimoniale",
+          name: "Camera Matrimoniale",
+          valve_entity: "sensor.valvola_matrimoniale",
+          windows: "binary_sensor.finestra_matrimoniale",
+          humidity_entity: "sensor.umidita_matrimoniale"
+        }
+      },
+      {
+        containerId: "container-cameretta",
+        config: {
+          type: "custom:climate-card",
+          entity: "climate.cameretta_1",
+          name: "Bagno Padronale",
+          valve_entity: "sensor.valvola_cameretta",
+          towel_heater: "switch.termoarredi_pt",
+          windows: "binary_sensor.finestra_cameretta",
+          humidity_entity: "sensor.umidita_cameretta"
+        }
+      }
+    ];
+
+    const cardElements = [];
+
+    configs.forEach(c => {
+      const el = document.createElement("climate-card");
+      el.setConfig(c.config);
+      el.hass = mockHass;
+      document.getElementById(c.containerId).appendChild(el);
+      cardElements.push(el);
+
+      el.addEventListener("hass-more-info", (e) => {
+        logAction(`ℹ️ Dettagli richiesti per entità: ${e.detail.entityId}`);
+      });
+    });
+
+    function notifyCards() {
+      cardElements.forEach(card => {
+        card.hass = { ...mockHass };
+      });
+    }
+
+    // Toggle Estate / Inverno
+    document.getElementById("btn-estate").addEventListener("click", () => {
+      document.getElementById("btn-estate").classList.add("active");
+      document.getElementById("btn-inverno").classList.remove("active");
+
+      // Set cooling
+      Object.keys(mockHass.states).filter(k => k.startsWith("climate.")).forEach(k => {
+        const c = mockHass.states[k];
+        c.state = "cool";
+        c.attributes.hvac_action = "cooling";
+        c.attributes.temperature = 24.0;
+      });
+      mockHass.states["climate.salotto"].attributes.current_temperature = 22.1;
+      mockHass.states["climate.sala_da_pranzo"].attributes.current_temperature = 21.9;
+      mockHass.states["climate.camera_matrimoniale"].attributes.current_temperature = 22.1;
+      mockHass.states["climate.cameretta_1"].attributes.current_temperature = 21.3;
+      notifyCards();
+      logAction("☀️ Passato a modalità ESTATE (Raffreddando a 24.0°C)");
+    });
+
+    document.getElementById("btn-inverno").addEventListener("click", () => {
+      document.getElementById("btn-inverno").classList.add("active");
+      document.getElementById("btn-estate").classList.remove("active");
+
+      // Set heating
+      Object.keys(mockHass.states).filter(k => k.startsWith("climate.")).forEach(k => {
+        const c = mockHass.states[k];
+        c.state = "heat";
+        c.attributes.hvac_action = "heating";
+        c.attributes.temperature = 21.5;
+      });
+      mockHass.states["climate.salotto"].attributes.current_temperature = 22.1;
+      mockHass.states["climate.sala_da_pranzo"].attributes.current_temperature = 21.9;
+      mockHass.states["climate.camera_matrimoniale"].attributes.current_temperature = 22.1;
+      mockHass.states["climate.cameretta_1"].attributes.current_temperature = 21.3;
+      notifyCards();
+      logAction("❄️ Passato a modalità INVERNO (Riscaldamento a 21.5°C)");
+    });
+
+    // Toggle Window & Balcony
+    let windowOpen = false;
+    document.getElementById("btn-toggle-window").addEventListener("click", (e) => {
+      windowOpen = !windowOpen;
+      mockHass.states["binary_sensor.finestra_salotto"].state = windowOpen ? "on" : "off";
+      e.target.classList.toggle("active", windowOpen);
+      notifyCards();
+      logAction(`🪟 Finestra Salotto: ${windowOpen ? 'APERTA ⚠️' : 'CHIUSA'}`);
+    });
+
+    let balconyOpen = false;
+    document.getElementById("btn-toggle-balcony").addEventListener("click", (e) => {
+      balconyOpen = !balconyOpen;
+      mockHass.states["binary_sensor.balcone_salotto"].state = balconyOpen ? "on" : "off";
+      e.target.classList.toggle("active", balconyOpen);
+      notifyCards();
+      logAction(`🚪 Balcone Salotto: ${balconyOpen ? 'APERTO ⚠️' : 'CHIUSO'}`);
+    });
+  </script>
+</body>
+</html>
