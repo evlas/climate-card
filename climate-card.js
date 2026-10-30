@@ -21,7 +21,7 @@
  * - Visual UI Editor support (ha-form schema)
  */
 
-const CARD_VERSION = "2.2.0";
+const CARD_VERSION = "0.0.2";
 
 console.info(
   `%c CLIMATE-CARD %c v${CARD_VERSION} `,
