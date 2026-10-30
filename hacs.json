@@ -1,5 +1,6 @@
 {
   "name": "Climate Card",
   "render_readme": true,
+  "content_in_root": true,
   "filename": "climate-card.js"
 }

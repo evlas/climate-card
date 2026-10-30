@@ -5,27 +5,163 @@
  * 
  * Features:
  * - 1:1 original Home Assistant Thermostat Card shapes, proportions, geometry, and colors
- * - Official 320x320 viewBox, 145 radius, 24px stroke width, 270° sweep angle (135° to 405°)
+ * - Official 320x320 viewBox, 145 radius, 28px stroke width, 270° sweep angle (135° to 405°)
  * - State colors: Heating (#ff9e6b / --state-climate-heat-color), Cooling (#71bcf9 / --state-climate-cool-color), Off, Auto
  * - Soft radial gradient glow background behind the dial (opacity 0.15)
- * - Accurate target knob & current temperature dot
- * - Official Big Number display (52px integer, stacked °C unit and decimal)
- * - Secondary current temperature display and integrated humidity (💧)
- * - 48px circular outlined stepper buttons (− / +) and integrated Reset button
+ * - Accurate target knob & current temperature dot with smooth, non-destructive pointer dragging
+ * - Official Big Number display (58px integer, stacked °C unit and decimal)
+ * - Secondary temperature display and clickable integrated humidity (💧)
+ * - 48px circular outlined stepper buttons (− / +) and integrated header Reset button
  * - Cleanly integrated fixtures (balconies, windows) with open alert pulse (#ef4444)
  * - Cleanly integrated zone valve (sensor, number, valve entity with percentage/state)
- * - Segmented feature bar for presets and HVAC modes matching hui-card-features
+ * - Cleanly integrated towel heater / radiator (switch, climate, input_boolean)
+ * - Segmented feature bar & dropdown support for presets and HVAC modes matching hui-card-features
  * - Universal events (+ / - / Reset) for scripts, buttons, and switches, plus native HA climate services
+ * - Automatic IT / EN localization based on Home Assistant language
  * - Visual UI Editor support (ha-form schema)
  */
 
-const CARD_VERSION = "2.1.0";
+const CARD_VERSION = "2.2.0";
 
 console.info(
   `%c CLIMATE-CARD %c v${CARD_VERSION} `,
   "color: white; background: #0284c7; font-weight: bold; border-radius: 4px 0 0 4px;",
   "color: #0284c7; background: #e0f2fe; font-weight: bold; border-radius: 0 4px 4px 0;"
 );
+
+// Translations (IT & EN)
+const TRANSLATIONS = {
+  it: {
+    default_name: "Termostato",
+    unavailable: "Non disponibile",
+    idle: "Inattivo",
+    off: "Spento",
+    heating: "Riscaldamento",
+    cooling: "Raffreddamento",
+    auto: "Automatico",
+    heat_cool: "Caldo/Freddo Auto",
+    dry: "Deumidificazione",
+    fan_only: "Solo ventilatore",
+    reset_tooltip: "Reset Setpoint / Aggiorna",
+    more_info_tooltip: "Dettagli",
+    target_temp_tooltip: "Temperatura impostata (Setpoint)",
+    current_temp_tooltip: "Temperatura attuale",
+    humidity_tooltip: "Umidità di zona",
+    balcony_default: "Balcone",
+    window_default: "Finestra",
+    open_m: "Aperto",
+    closed_m: "Chiuso",
+    open_f: "Aperta",
+    closed_f: "Chiusa",
+    towel_heater_default: "Termoarredo",
+    towel_heater_tooltip: "Clicca per accendere/spegnere",
+    valve_tooltip: "Valvola di zona",
+    step_down_tooltip: "Riduci temperatura",
+    step_up_tooltip: "Aumenta temperatura",
+    presets: {
+      comfort: "Comfort",
+      standby: "Standby",
+      economy: "Economy",
+      eco: "Eco",
+      building_protection: "Protezione Edificio",
+      frost_protection: "Protezione Antigelo",
+      away: "Fuori casa",
+      boost: "Boost",
+      sleep: "Notte",
+      home: "A casa",
+      activity: "Attività",
+      none: "Nessuno"
+    },
+    hvac: {
+      heat: "Riscaldamento",
+      cool: "Raffreddamento",
+      auto: "Automatico",
+      heat_cool: "Caldo/Freddo Auto",
+      dry: "Deumidificazione",
+      fan_only: "Solo Ventilatore",
+      off: "Spento"
+    },
+    editor: {
+      entity: "Entità Termostato (Climate) *",
+      name: "Titolo Card (Opzionale)",
+      valve_entity: "Entità Valvola di Zona (Opzionale)",
+      towel_heater: "Termoarredo Bagno (Switch/Clima Opzionale)",
+      windows: "Finestre (Binary Sensor)",
+      balconies: "Balconi / Portefinestre (Binary Sensor)",
+      humidity_entity: "Sensore Umidità (Opzionale)",
+      show_current_as_primary: "Temperatura Attuale grande al centro (e Setpoint sotto)",
+      disable_slider: "Disabilita trascinamento ghiera (solo tasti + e −)",
+      event_up: "Azione Aumento Setpoint (+) [Script / Button / Switch]",
+      event_down: "Azione Diminuzione Setpoint (−) [Script / Button / Switch]",
+      event_reset: "Azione Reset Setpoint (↻) [Script / Button / Switch]"
+    }
+  },
+  en: {
+    default_name: "Thermostat",
+    unavailable: "Unavailable",
+    idle: "Idle",
+    off: "Off",
+    heating: "Heating",
+    cooling: "Cooling",
+    auto: "Auto",
+    heat_cool: "Heat/Cool",
+    dry: "Drying",
+    fan_only: "Fan only",
+    reset_tooltip: "Reset Setpoint / Refresh",
+    more_info_tooltip: "More info",
+    target_temp_tooltip: "Target temperature (Setpoint)",
+    current_temp_tooltip: "Current temperature",
+    humidity_tooltip: "Zone humidity",
+    balcony_default: "Balcony",
+    window_default: "Window",
+    open_m: "Open",
+    closed_m: "Closed",
+    open_f: "Open",
+    closed_f: "Closed",
+    towel_heater_default: "Towel Heater",
+    towel_heater_tooltip: "Click to toggle",
+    valve_tooltip: "Zone valve",
+    step_down_tooltip: "Decrease temperature",
+    step_up_tooltip: "Increase temperature",
+    presets: {
+      comfort: "Comfort",
+      standby: "Standby",
+      economy: "Economy",
+      eco: "Eco",
+      building_protection: "Building Protection",
+      frost_protection: "Frost Protection",
+      away: "Away",
+      boost: "Boost",
+      sleep: "Sleep",
+      home: "Home",
+      activity: "Activity",
+      none: "None"
+    },
+    hvac: {
+      heat: "Heat",
+      cool: "Cool",
+      auto: "Auto",
+      heat_cool: "Heat/Cool",
+      dry: "Dry",
+      fan_only: "Fan only",
+      off: "Off"
+    },
+    editor: {
+      entity: "Thermostat Entity (Climate) *",
+      name: "Card Title (Optional)",
+      valve_entity: "Zone Valve Entity (Optional)",
+      towel_heater: "Bathroom Towel Heater (Switch/Climate Optional)",
+      windows: "Windows (Binary Sensor)",
+      balconies: "Balconies / Patio Doors (Binary Sensor)",
+      humidity_entity: "Humidity Sensor (Optional)",
+      show_current_as_primary: "Show Current Temperature as primary large number",
+      disable_slider: "Disable circular slider dragging (buttons + and − only)",
+      event_up: "Setpoint Up Action (+) [Script / Button / Switch]",
+      event_down: "Setpoint Down Action (−) [Script / Button / Switch]",
+      event_reset: "Setpoint Reset Action (↻) [Script / Button / Switch]"
+    }
+  }
+};
 
 // Standard MDI SVGs used throughout Home Assistant
 const ICONS = {
@@ -124,6 +260,21 @@ const ICONS = {
   </svg>`
 };
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getLang(hass, configLang) {
+  const raw = String(configLang || hass?.locale?.language || hass?.language || navigator.language || "it").toLowerCase();
+  return raw.startsWith("it") ? "it" : "en";
+}
+
 /**
  * Calculates SVG arc path using exact Home Assistant geometry
  * (320x320 viewBox, center 160,160, radius 145)
@@ -154,12 +305,51 @@ class ClimateCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._isDragging = false;
     this._tempPending = null;
+    this._pendingTimer = null;
     this._resetSpinning = false;
+    this._resetTimer = null;
+    this._lastStateSignature = null;
   }
 
   set hass(hass) {
     this._hass = hass;
-    this._updateCard();
+    if (!this._config) return;
+    // Never destroy the DOM while the user is actively dragging the circular slider
+    if (this._isDragging) return;
+
+    const sig = this._computeStateSignature(hass);
+    if (sig !== this._lastStateSignature) {
+      this._lastStateSignature = sig;
+      this._updateCard();
+    }
+  }
+
+  _computeStateSignature(hass) {
+    if (!hass || !this._config) return "";
+    const entities = [
+      this._config.entity,
+      this._config.valve_entity,
+      this._config.towel_heater,
+      this._config.humidity_entity,
+      ...this._normalizeEntities(this._config.windows),
+      ...this._normalizeEntities(this._config.balconies)
+    ].filter(Boolean);
+
+    const lang = getLang(hass, this._config.language);
+    const parts = [lang, this._tempPending, this._resetSpinning];
+
+    for (const id of entities) {
+      const st = hass.states[id];
+      if (!st) {
+        parts.push(`${id}:null`);
+      } else {
+        const a = st.attributes || {};
+        parts.push(
+          `${id}:${st.state}:${a.temperature}:${a.current_temperature}:${a.current_humidity}:${a.hvac_action}:${a.preset_mode}:${a.current_position}:${a.friendly_name}`
+        );
+      }
+    }
+    return parts.join("|");
   }
 
   setConfig(config) {
@@ -169,15 +359,15 @@ class ClimateCard extends HTMLElement {
 
     // Parse features: [] matching Home Assistant official features
     let presetModes = null;
-    let presetStyle = "icons";
+    let presetStyle = config.preset_style || "icons";
     let hvacModes = null;
-    let hvacStyle = "icons";
+    let hvacStyle = config.hvac_style || "icons";
 
-    let valveEntity = config.valve_entity;
-    let towelHeater = config.towel_heater || config.heater_entity || config.termoarredo;
+    let valveEntity = config.valve_entity || "";
+    let towelHeater = config.towel_heater || config.heater_entity || config.termoarredo || "";
     let windows = config.windows || config.window_entity;
     let balconies = config.balconies || config.balcony_entity;
-    let humidityEntity = config.humidity_entity;
+    let humidityEntity = config.humidity_entity || "";
 
     if (Array.isArray(config.features)) {
       config.features.forEach(f => {
@@ -187,16 +377,17 @@ class ClimateCard extends HTMLElement {
           if (f.style) presetStyle = f.style;
         } else if (f.type === "climate-hvac-modes" || f.type === "hvac-modes") {
           if (Array.isArray(f.hvac_modes)) hvacModes = [...f.hvac_modes];
+          else hvacModes = "auto_from_entity";
           if (f.style) hvacStyle = f.style;
         } else if (f.type === "climate-card-valve" || f.type === "valve") {
-          if (f.entity) valveEntity = f.entity;
+          if (f.entity && !valveEntity) valveEntity = f.entity;
         } else if (f.type === "climate-card-towel-heater" || f.type === "towel-heater") {
-          if (f.entity) towelHeater = f.entity;
+          if (f.entity && !towelHeater) towelHeater = f.entity;
         } else if (f.type === "climate-card-fixtures" || f.type === "fixtures") {
-          if (f.windows) windows = f.windows;
-          if (f.balconies) balconies = f.balconies;
+          if (f.windows && (!windows || (Array.isArray(windows) && !windows.length))) windows = f.windows;
+          if (f.balconies && (!balconies || (Array.isArray(balconies) && !balconies.length))) balconies = f.balconies;
         } else if (f.type === "humidity" || f.type === "humidity-sensor") {
-          if (f.entity) humidityEntity = f.entity;
+          if (f.entity && !humidityEntity) humidityEntity = f.entity;
         }
       });
     }
@@ -207,11 +398,16 @@ class ClimateCard extends HTMLElement {
         : (Array.isArray(config.presets) ? [...config.presets] : null);
     }
 
-    const eventUp = config.event_up || config.script_up || config.action_up;
-    const eventDown = config.event_down || config.script_down || config.action_down;
-    const eventReset = config.event_reset || config.script_reset || config.reset_script || config.action_reset || config.reset_entity;
+    if (!hvacModes && Array.isArray(config.hvac_modes)) {
+      hvacModes = [...config.hvac_modes];
+    }
+
+    const eventUp = config.event_up || config.script_up || config.action_up || "";
+    const eventDown = config.event_down || config.script_down || config.action_down || "";
+    const eventReset = config.event_reset || config.script_reset || config.reset_script || config.action_reset || config.reset_entity || "";
 
     this._config = {
+      ...config,
       name: config.name,
       entity: config.entity,
       theme: config.theme,
@@ -221,27 +417,22 @@ class ClimateCard extends HTMLElement {
       hvac_modes: hvacModes,
       hvac_style: hvacStyle,
       preset_icons: config.preset_icons || {},
-      valve_entity: valveEntity,
-      towel_heater: towelHeater,
+      valve_entity: valveEntity || undefined,
+      towel_heater: towelHeater || undefined,
       windows: windows,
       balconies: balconies,
-      humidity_entity: humidityEntity,
+      humidity_entity: humidityEntity || undefined,
       step: config.step,
       min_temp: config.min_temp,
       max_temp: config.max_temp,
       show_current_as_primary: config.show_current_as_primary !== false, // Default: true (Temperatura Attuale grande)
-      event_up: eventUp,
-      event_down: eventDown,
-      event_reset: eventReset,
-      disable_slider: config.disable_slider,
-      ...config
+      event_up: eventUp || undefined,
+      event_down: eventDown || undefined,
+      event_reset: eventReset || undefined,
+      disable_slider: config.disable_slider
     };
-    if (presetModes) this._config.preset_modes = presetModes;
-    if (hvacModes) this._config.hvac_modes = hvacModes;
-    if (eventUp) this._config.event_up = eventUp;
-    if (eventDown) this._config.event_down = eventDown;
-    if (eventReset) this._config.event_reset = eventReset;
 
+    this._lastStateSignature = null;
     this._updateCard();
   }
 
@@ -272,6 +463,11 @@ class ClimateCard extends HTMLElement {
     return 6;
   }
 
+  _t() {
+    const lang = getLang(this._hass, this._config?.language);
+    return TRANSLATIONS[lang] || TRANSLATIONS.it;
+  }
+
   _normalizeKey(key) {
     if (!key) return "";
     return String(key).toLowerCase().trim().replace(/[-\s]+/g, "_");
@@ -290,13 +486,23 @@ class ClimateCard extends HTMLElement {
     return ["comfort", "standby", "economy", "building_protection"];
   }
 
+  _getHvacList(stateObj) {
+    if (Array.isArray(this._config.hvac_modes) && this._config.hvac_modes.length > 0) {
+      return this._config.hvac_modes;
+    }
+    if (this._config.hvac_modes === "auto_from_entity") {
+      return stateObj?.attributes?.hvac_modes || ["heat", "cool", "off"];
+    }
+    return null;
+  }
+
   _getPresetIcon(preset) {
     const norm = this._normalizeKey(preset);
 
     if (this._config.preset_icons && this._config.preset_icons[preset]) {
       const custom = this._config.preset_icons[preset];
       if (typeof custom === "string" && custom.startsWith("<svg")) return custom;
-      return `<ha-icon icon="${custom}"></ha-icon>`;
+      return `<ha-icon icon="${escapeHtml(custom)}"></ha-icon>`;
     }
 
     if (norm === "comfort" || norm === "home") return ICONS.sofa;
@@ -314,20 +520,8 @@ class ClimateCard extends HTMLElement {
 
   _getPresetLabel(preset) {
     const norm = this._normalizeKey(preset);
-    const labels = {
-      comfort: "Comfort",
-      standby: "Standby",
-      economy: "Economy",
-      eco: "Eco",
-      building_protection: "Protezione Edificio",
-      frost_protection: "Protezione Antigelo",
-      away: "Fuori casa",
-      boost: "Boost",
-      sleep: "Notte",
-      home: "A casa",
-      none: "Nessuno"
-    };
-    return labels[norm] || String(preset).replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const t = this._t();
+    return t.presets[norm] || String(preset).replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   }
 
   _getHvacIcon(mode) {
@@ -343,21 +537,13 @@ class ClimateCard extends HTMLElement {
 
   _getHvacLabel(mode) {
     const norm = this._normalizeKey(mode);
-    const labels = {
-      heat: "Riscaldamento",
-      cool: "Raffreddamento",
-      auto: "Automatico",
-      heat_cool: "Caldo/Freddo Auto",
-      dry: "Deumidificazione",
-      fan_only: "Solo Ventilatore",
-      off: "Spento"
-    };
-    return labels[norm] || String(mode).replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const t = this._t();
+    return t.hvac[norm] || String(mode).replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   }
 
   _normalizeEntities(val) {
     if (!val) return [];
-    if (Array.isArray(val)) return val;
+    if (Array.isArray(val)) return val.filter(Boolean);
     return [val];
   }
 
@@ -382,8 +568,8 @@ class ClimateCard extends HTMLElement {
     let numVal = parseFloat(display);
 
     if (stateObj.attributes && stateObj.attributes.current_position !== undefined) {
-      numVal = stateObj.attributes.current_position;
-      display = `${numVal}%`;
+      numVal = Number(stateObj.attributes.current_position);
+      display = `${Math.round(numVal)}%`;
     } else if (!isNaN(numVal)) {
       display = `${Math.round(numVal)}%`;
     } else if (stateObj.attributes && stateObj.attributes.unit_of_measurement === "%") {
@@ -393,23 +579,29 @@ class ClimateCard extends HTMLElement {
     return {
       entity_id: this._config.valve_entity,
       display: display,
-      isOpen: numVal > 0 || stateObj.state === "open" || stateObj.state === "on"
+      isOpen: (!isNaN(numVal) && numVal > 0) || stateObj.state === "open" || stateObj.state === "on"
     };
   }
 
   _getTowelHeaterState() {
-    const entityId = this._config.towel_heater || this._config.heater_entity || this._config.termoarredo;
+    const entityId = this._config.towel_heater;
     if (!entityId || !this._hass) return null;
     const stateObj = this._hass.states[entityId];
     if (!stateObj) return null;
 
-    const isOn = stateObj.state === "on" || stateObj.state === "open";
-    const name = stateObj.attributes?.friendly_name || "Termoarredo";
+    const t = this._t();
+    const domain = entityId.split(".")[0];
+    const st = stateObj.state;
+    const isOn = domain === "climate"
+      ? (st !== "off" && st !== "unavailable" && st !== "unknown")
+      : (st === "on" || st === "open");
+
+    const name = stateObj.attributes?.friendly_name || t.towel_heater_default;
     const display = isOn ? "ON" : "OFF";
 
     return {
       entity_id: entityId,
-      state: stateObj.state,
+      state: st,
       isOn: isOn,
       display: display,
       name: name
@@ -418,6 +610,15 @@ class ClimateCard extends HTMLElement {
 
   _toggleTowelHeater(entityId) {
     if (!this._hass || !entityId) return;
+    const domain = entityId.split(".")[0];
+    const stateObj = this._hass.states[entityId];
+    if (domain === "climate" && stateObj) {
+      const isOff = stateObj.state === "off";
+      this._hass.callService("climate", isOff ? "turn_on" : "turn_off", {
+        entity_id: entityId
+      });
+      return;
+    }
     this._hass.callService("homeassistant", "toggle", {
       entity_id: entityId
     });
@@ -427,11 +628,17 @@ class ClimateCard extends HTMLElement {
     if (this._config.humidity_entity && this._hass) {
       const humObj = this._hass.states[this._config.humidity_entity];
       if (humObj && !isNaN(parseFloat(humObj.state))) {
-        return Math.round(parseFloat(humObj.state));
+        return {
+          value: Math.round(parseFloat(humObj.state)),
+          entity_id: this._config.humidity_entity
+        };
       }
     }
-    if (climateState?.attributes?.current_humidity !== undefined) {
-      return Math.round(climateState.attributes.current_humidity);
+    if (climateState?.attributes?.current_humidity !== undefined && !isNaN(parseFloat(climateState.attributes.current_humidity))) {
+      return {
+        value: Math.round(parseFloat(climateState.attributes.current_humidity)),
+        entity_id: this._config.entity
+      };
     }
     return null;
   }
@@ -440,14 +647,16 @@ class ClimateCard extends HTMLElement {
    * Colors and State info identical to Home Assistant frontend stateColorCss & theme variables
    */
   _getClimateModeInfo(stateObj) {
-    if (!stateObj) {
+    const t = this._t();
+    if (!stateObj || stateObj.state === "unavailable" || stateObj.state === "unknown") {
       return {
         hvacMode: "off",
+        isAvailable: false,
         isHeating: false,
         isCooling: false,
         isOff: true,
         actionColor: "var(--state-climate-off-color, var(--disabled-color, #9e9e9e))",
-        stateText: "Non disponibile"
+        stateText: t.unavailable
       };
     }
 
@@ -459,23 +668,25 @@ class ClimateCard extends HTMLElement {
     const isOff = hvacMode === "off";
 
     // Standard Home Assistant state texts
-    let stateText = "Inattivo";
+    let stateText = t.idle;
     if (isOff) {
-      stateText = "Spento";
+      stateText = t.off;
     } else if (hvacAction === "heating") {
-      stateText = "Riscaldamento";
+      stateText = t.heating;
     } else if (hvacAction === "cooling") {
-      stateText = "Raffreddamento";
+      stateText = t.cooling;
     } else if (hvacMode === "heat") {
-      stateText = "Riscaldamento";
+      stateText = t.heating;
     } else if (hvacMode === "cool") {
-      stateText = "Raffreddamento";
+      stateText = t.cooling;
     } else if (hvacMode === "auto") {
-      stateText = "Automatico";
+      stateText = t.auto;
+    } else if (hvacMode === "heat_cool") {
+      stateText = t.heat_cool;
     } else if (hvacMode === "dry") {
-      stateText = "Deumidificazione";
+      stateText = t.dry;
     } else if (hvacMode === "fan_only") {
-      stateText = "Solo ventilatore";
+      stateText = t.fan_only;
     }
 
     // Official Home Assistant state color CSS variables with calibrated fallbacks
@@ -485,7 +696,7 @@ class ClimateCard extends HTMLElement {
       actionColor = "var(--state-climate-cool-color, var(--state-cool-color, #71bcf9))";
     } else if (isHeating || hvacMode === "heat") {
       actionColor = "var(--state-climate-heat-color, var(--state-heat-color, #ff9e6b))";
-    } else if (hvacMode === "auto") {
+    } else if (hvacMode === "auto" || hvacMode === "heat_cool") {
       actionColor = "var(--state-climate-auto-color, var(--state-auto-color, #4caf50))";
     } else if (hvacMode === "dry") {
       actionColor = "var(--state-climate-dry-color, #ef6c00)";
@@ -494,6 +705,7 @@ class ClimateCard extends HTMLElement {
     return {
       hvacMode,
       hvacAction,
+      isAvailable: true,
       isHeating,
       isCooling,
       isOff,
@@ -512,19 +724,99 @@ class ClimateCard extends HTMLElement {
     this.dispatchEvent(event);
   }
 
-  _setTemperature(temp) {
+  _clampTargetTemp(temp) {
+    const stateObj = this._hass?.states[this._config?.entity];
+    const min = this._config?.min_temp ?? stateObj?.attributes?.min_temp ?? 16;
+    const max = this._config?.max_temp ?? stateObj?.attributes?.max_temp ?? 30;
+    const step = this._config?.step ?? stateObj?.attributes?.target_temp_step ?? 0.5;
+
+    let bounded = Math.max(min, Math.min(max, temp));
+    bounded = Math.round(bounded / step) * step;
+    // Avoid floating point precision artifacts (e.g. 21.000000000000004)
+    return Number(bounded.toFixed(2));
+  }
+
+  /**
+   * Updates the dial knob, active arc, and temperature numbers in-place during pointer drag
+   * without replacing shadowRoot.innerHTML or spamming HA services.
+   */
+  _updateSliderVisuals(targetTemp) {
+    const root = this.shadowRoot;
+    if (!root) return;
+
+    const stateObj = this._hass?.states[this._config.entity];
+    const minTemp = this._config.min_temp ?? stateObj?.attributes?.min_temp ?? 16;
+    const maxTemp = this._config.max_temp ?? stateObj?.attributes?.max_temp ?? 30;
+    const currentTemp = stateObj?.attributes?.current_temperature ?? 21.0;
+    const modeInfo = this._getClimateModeInfo(stateObj);
+
+    const cx = 160;
+    const cy = 160;
+    const r = 145;
+    const startAngle = 135;
+    const sweepTotal = 270;
+
+    const tempToAngle = (t) => {
+      const frac = Math.max(0, Math.min(1, (t - minTemp) / (maxTemp - minTemp)));
+      return startAngle + frac * sweepTotal;
+    };
+
+    const targetAngle = tempToAngle(targetTemp);
+    const currentAngle = tempToAngle(currentTemp);
+    const targetPos = polarToXY(cx, cy, r, targetAngle);
+
+    const handleEl = root.getElementById("target-handle");
+    if (handleEl) {
+      handleEl.setAttribute("cx", targetPos.x.toFixed(2));
+      handleEl.setAttribute("cy", targetPos.y.toFixed(2));
+    }
+
+    const activeArcEl = root.getElementById("track-active");
+    if (activeArcEl) {
+      let activeArcPath = "";
+      if (modeInfo.isCooling || modeInfo.hvacMode === "cool") {
+        activeArcPath = describeArc(cx, cy, r, targetAngle, startAngle + sweepTotal);
+      } else if (modeInfo.isHeating || modeInfo.hvacMode === "heat") {
+        activeArcPath = describeArc(cx, cy, r, startAngle, targetAngle);
+      } else if (modeInfo.hvacMode === "auto" || modeInfo.hvacMode === "heat_cool") {
+        const aMin = Math.min(currentAngle, targetAngle);
+        const aMax = Math.max(currentAngle, targetAngle);
+        activeArcPath = describeArc(cx, cy, r, aMin, aMax);
+      }
+      activeArcEl.setAttribute("d", activeArcPath);
+    }
+
+    const primaryIsCurrent = this._config.show_current_as_primary !== false;
+    const formatted = Number(targetTemp).toFixed(1).replace(".", ",");
+    if (!primaryIsCurrent) {
+      const [pInt, pDec] = formatted.split(",");
+      const intEl = root.getElementById("primary-temp-int");
+      const decEl = root.getElementById("primary-temp-dec");
+      if (intEl) intEl.textContent = pInt;
+      if (decEl) decEl.textContent = `,${pDec ?? "0"}`;
+    } else {
+      const secEl = root.getElementById("secondary-temp-val");
+      if (secEl) secEl.textContent = `${formatted} °C`;
+    }
+  }
+
+  _setTemperature(temp, commit = true) {
     if (!this._hass || !this._config.entity) return;
     const stateObj = this._hass.states[this._config.entity];
     if (!stateObj) return;
 
-    const min = this._config.min_temp ?? stateObj.attributes?.min_temp ?? 16;
-    const max = this._config.max_temp ?? stateObj.attributes?.max_temp ?? 30;
-    const step = this._config.step ?? stateObj.attributes?.target_temp_step ?? 0.5;
-
-    let bounded = Math.max(min, Math.min(max, temp));
-    bounded = Math.round(bounded / step) * step;
-
+    const bounded = this._clampTargetTemp(temp);
     this._tempPending = bounded;
+
+    if (!commit) {
+      this._updateSliderVisuals(bounded);
+      return;
+    }
+
+    if (this._pendingTimer) {
+      clearTimeout(this._pendingTimer);
+    }
+
     this._render();
 
     this._hass.callService("climate", "set_temperature", {
@@ -532,10 +824,11 @@ class ClimateCard extends HTMLElement {
       temperature: bounded
     });
 
-    setTimeout(() => {
+    this._pendingTimer = setTimeout(() => {
       this._tempPending = null;
+      this._pendingTimer = null;
       this._render();
-    }, 1200);
+    }, 1500);
   }
 
   _callCustomAction(target) {
@@ -565,8 +858,8 @@ class ClimateCard extends HTMLElement {
 
   _changeTempStep(delta) {
     // 1. Custom Events (script, button, switch, etc.)
-    const upTarget = this._config.event_up || this._config.script_up;
-    const downTarget = this._config.event_down || this._config.script_down;
+    const upTarget = this._config.event_up;
+    const downTarget = this._config.event_down;
 
     if (delta > 0 && upTarget) {
       this._callCustomAction(upTarget);
@@ -577,12 +870,12 @@ class ClimateCard extends HTMLElement {
       return;
     }
 
-    // 3. Standard Home Assistant climate.set_temperature
+    // 2. Standard Home Assistant climate.set_temperature
     const stateObj = this._hass?.states[this._config?.entity];
     if (!stateObj) return;
     const step = this._config.step ?? stateObj.attributes?.target_temp_step ?? 0.5;
     const current = this._tempPending ?? stateObj.attributes?.temperature ?? 20;
-    this._setTemperature(current + delta * step);
+    this._setTemperature(current + delta * step, true);
   }
 
   _setPreset(preset) {
@@ -610,10 +903,12 @@ class ClimateCard extends HTMLElement {
 
   _triggerReset() {
     if (!this._hass || !this._config.entity) return;
+    if (this._resetTimer) clearTimeout(this._resetTimer);
+
     this._resetSpinning = true;
     this._render();
 
-    const resetTarget = this._config.event_reset || this._config.script_reset;
+    const resetTarget = this._config.event_reset;
     if (resetTarget) {
       this._callCustomAction(resetTarget);
     } else {
@@ -627,8 +922,9 @@ class ClimateCard extends HTMLElement {
       }
     }
 
-    setTimeout(() => {
+    this._resetTimer = setTimeout(() => {
       this._resetSpinning = false;
+      this._resetTimer = null;
       this._render();
     }, 700);
   }
@@ -639,13 +935,19 @@ class ClimateCard extends HTMLElement {
   }
 
   _render() {
+    const t = this._t();
     const stateObj = this._hass?.states[this._config.entity];
-    const name = this._config.name || stateObj?.attributes?.friendly_name || "Termostato";
+    const name = this._config.name || stateObj?.attributes?.friendly_name || t.default_name;
 
     const minTemp = this._config.min_temp ?? stateObj?.attributes?.min_temp ?? 16;
     const maxTemp = this._config.max_temp ?? stateObj?.attributes?.max_temp ?? 30;
-    const currentTemp = stateObj?.attributes?.current_temperature ?? 21.0;
-    const targetTemp = this._tempPending !== null ? this._tempPending : (stateObj?.attributes?.temperature ?? 21.0);
+    const hasCurrentTemp = stateObj?.attributes?.current_temperature !== undefined && stateObj?.attributes?.current_temperature !== null;
+    const hasTargetTemp = stateObj?.attributes?.temperature !== undefined && stateObj?.attributes?.temperature !== null;
+
+    const currentTemp = hasCurrentTemp ? Number(stateObj.attributes.current_temperature) : 21.0;
+    const targetTemp = this._tempPending !== null
+      ? this._tempPending
+      : (hasTargetTemp ? Number(stateObj.attributes.temperature) : 21.0);
 
     const modeInfo = this._getClimateModeInfo(stateObj);
     const humidity = this._getHumidityState(stateObj);
@@ -660,9 +962,15 @@ class ClimateCard extends HTMLElement {
     const primaryVal = primaryIsCurrent ? currentTemp : targetTemp;
     const secondaryVal = primaryIsCurrent ? targetTemp : currentTemp;
 
-    const primaryFormatted = Number(primaryVal).toFixed(1).replace(".", ",");
-    const [pInt, pDec] = primaryFormatted.split(",");
-    const secondaryFormatted = Number(secondaryVal).toFixed(1).replace(".", ",");
+    let pInt = "--";
+    let pDec = "0";
+    let secondaryFormatted = "--";
+
+    if (modeInfo.isAvailable) {
+      const primaryFormatted = Number(primaryVal).toFixed(1).replace(".", ",");
+      [pInt, pDec] = primaryFormatted.split(",");
+      secondaryFormatted = Number(secondaryVal).toFixed(1).replace(".", ",");
+    }
 
     // Exact Home Assistant circular slider geometry
     // Center: 160, 160. Radius: 145.
@@ -673,8 +981,8 @@ class ClimateCard extends HTMLElement {
     const startAngle = 135;
     const sweepTotal = 270;
 
-    const tempToAngle = (t) => {
-      const frac = Math.max(0, Math.min(1, (t - minTemp) / (maxTemp - minTemp)));
+    const tempToAngle = (tempVal) => {
+      const frac = Math.max(0, Math.min(1, (tempVal - minTemp) / (maxTemp - minTemp)));
       return startAngle + frac * sweepTotal;
     };
 
@@ -686,14 +994,16 @@ class ClimateCard extends HTMLElement {
 
     // Active arc path according to HVAC action/mode (Start mode for heating, End mode for cooling)
     let activeArcPath = "";
-    if (modeInfo.isCooling || modeInfo.hvacMode === "cool") {
-      activeArcPath = describeArc(cx, cy, r, targetAngle, startAngle + sweepTotal);
-    } else if (modeInfo.isHeating || modeInfo.hvacMode === "heat") {
-      activeArcPath = describeArc(cx, cy, r, startAngle, targetAngle);
-    } else if (modeInfo.hvacMode === "auto") {
-      const aMin = Math.min(currentAngle, targetAngle);
-      const aMax = Math.max(currentAngle, targetAngle);
-      activeArcPath = describeArc(cx, cy, r, aMin, aMax);
+    if (modeInfo.isAvailable) {
+      if (modeInfo.isCooling || modeInfo.hvacMode === "cool") {
+        activeArcPath = describeArc(cx, cy, r, targetAngle, startAngle + sweepTotal);
+      } else if (modeInfo.isHeating || modeInfo.hvacMode === "heat") {
+        activeArcPath = describeArc(cx, cy, r, startAngle, targetAngle);
+      } else if (modeInfo.hvacMode === "auto" || modeInfo.hvacMode === "heat_cool") {
+        const aMin = Math.min(currentAngle, targetAngle);
+        const aMax = Math.max(currentAngle, targetAngle);
+        activeArcPath = describeArc(cx, cy, r, aMin, aMax);
+      }
     }
 
     // Coordinates for the target handle knob and current temp indicator
@@ -704,19 +1014,16 @@ class ClimateCard extends HTMLElement {
     const presets = this._getPresetList(stateObj);
     const currentPreset = stateObj?.attributes?.preset_mode;
     const currentPresetNorm = this._normalizeKey(currentPreset);
+    const presetStyle = this._config.preset_style || "icons";
 
     // Feature buttons: HVAC modes matching Home Assistant features: [type: climate-hvac-modes]
-    let hvacModes = null;
-    if (Array.isArray(this._config.features)) {
-      const hvacFeature = this._config.features.find(
-        f => f && (f.type === "climate-hvac-modes" || f.type === "hvac-modes")
-      );
-      if (hvacFeature) {
-        hvacModes = Array.isArray(hvacFeature.hvac_modes)
-          ? hvacFeature.hvac_modes
-          : (stateObj?.attributes?.hvac_modes || ["heat", "cool", "off"]);
-      }
-    }
+    const hvacModes = this._getHvacList(stateObj);
+    const hvacStyle = this._config.hvac_style || "icons";
+
+    const sliderDisabled = Boolean(
+      this._config.disable_slider ||
+      (this._config.event_up && this._config.disable_slider !== false)
+    );
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -757,7 +1064,7 @@ class ClimateCard extends HTMLElement {
           font-size: var(--ha-font-size-l, 16px);
           font-weight: 500;
           line-height: var(--ha-line-height-expanded, 24px);
-          padding: 12px 48px 4px 48px;
+          padding: 12px 68px 4px 68px;
           margin: 0;
           text-align: center;
           color: var(--primary-text-color, #212121);
@@ -839,7 +1146,7 @@ class ClimateCard extends HTMLElement {
           height: 100%;
           overflow: visible;
           display: block;
-          touch-action: none;
+          touch-action: ${sliderDisabled ? "auto" : "none"};
         }
 
         /* Track paths matching ha-control-circular-slider */
@@ -857,7 +1164,7 @@ class ClimateCard extends HTMLElement {
           stroke: ${modeInfo.actionColor};
           stroke-width: 28px;
           stroke-linecap: round;
-          transition: stroke-dashoffset 220ms ease, stroke 200ms ease;
+          transition: stroke 200ms ease;
         }
 
         /* Current temp indicator on track */
@@ -873,11 +1180,11 @@ class ClimateCard extends HTMLElement {
           stroke: ${modeInfo.actionColor};
           stroke-width: 3.5px;
           filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
-          cursor: grab;
-          transition: cx 0.08s, cy 0.08s, stroke 0.2s;
+          cursor: ${sliderDisabled ? "default" : "grab"};
+          transition: stroke 0.2s;
         }
         .target-handle:active {
-          cursor: grabbing;
+          cursor: ${sliderDisabled ? "default" : "grabbing"};
         }
 
         /* Center Info matching ha-state-control-climate-temperature */
@@ -968,6 +1275,14 @@ class ClimateCard extends HTMLElement {
           font-weight: 500;
           color: var(--secondary-text-color, #64748b);
           margin-top: 3px;
+          pointer-events: auto;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: 8px;
+          transition: background-color 0.15s;
+        }
+        .humidity-badge:hover {
+          background: rgba(var(--rgb-primary-text, 0, 0, 0), 0.05);
         }
         .humidity-badge svg {
           color: #0284c7;
@@ -1173,17 +1488,31 @@ class ClimateCard extends HTMLElement {
           background: ${modeInfo.actionColor};
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
+
+        .feature-select {
+          width: 100%;
+          height: 42px;
+          border-radius: 12px;
+          border: 1px solid var(--divider-color, #e5e7eb);
+          background: var(--secondary-background-color, rgba(127, 127, 127, 0.12));
+          color: var(--primary-text-color, #212121);
+          padding: 0 12px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          outline: none;
+        }
       </style>
 
-      <div class="ha-card-container">
+      <ha-card class="ha-card-container">
         <!-- Title & Header Actions -->
-        <p class="title" id="title">${name}</p>
+        <p class="title" id="title">${escapeHtml(name)}</p>
         
         <div class="header-actions">
-          <button class="icon-btn-ghost ${this._resetSpinning ? 'spinning' : ''}" id="btn-reset-header" title="Reset Setpoint / Aggiorna">
+          <button class="icon-btn-ghost ${this._resetSpinning ? 'spinning' : ''}" id="btn-reset-header" title="${escapeHtml(t.reset_tooltip)}">
             ${ICONS.refresh}
           </button>
-          <button class="icon-btn-ghost" id="btn-more-info" title="Dettagli">
+          <button class="icon-btn-ghost" id="btn-more-info" title="${escapeHtml(t.more_info_tooltip)}">
             ${ICONS.dots_vertical}
           </button>
         </div>
@@ -1199,38 +1528,40 @@ class ClimateCard extends HTMLElement {
             <path class="track-background" d="${bgArcPath}" />
 
             <!-- Active colored arc -->
-            ${activeArcPath ? `<path class="track-active" d="${activeArcPath}" />` : ""}
+            <path class="track-active" id="track-active" d="${activeArcPath}" />
 
             <!-- Current temperature position dot -->
-            <circle class="indicator-current" cx="${currentPos.x.toFixed(2)}" cy="${currentPos.y.toFixed(2)}" r="4.5" />
-
-            <!-- Target temperature draggable handle -->
-            <circle class="target-handle" id="target-handle" cx="${targetPos.x.toFixed(2)}" cy="${targetPos.y.toFixed(2)}" r="12" />
+            ${modeInfo.isAvailable ? `
+              <circle class="indicator-current" cx="${currentPos.x.toFixed(2)}" cy="${currentPos.y.toFixed(2)}" r="4.5" />
+              <circle class="target-handle" id="target-handle" cx="${targetPos.x.toFixed(2)}" cy="${targetPos.y.toFixed(2)}" r="12" />
+            ` : ""}
           </svg>
 
           <!-- Center Info (Action label, big number, secondary current temp & humidity) -->
           <div class="center-info">
-            <div class="state-label">${modeInfo.stateText}</div>
+            <div class="state-label">${escapeHtml(modeInfo.stateText)}</div>
 
             <div class="big-number">
-              <span class="temp-integer">${pInt}</span>
-              <div class="temp-addon">
-                <span class="temp-decimal">,${pDec ?? '0'}</span>
-                <span class="temp-unit">°C</span>
-              </div>
+              <span class="temp-integer" id="primary-temp-int">${pInt}</span>
+              ${modeInfo.isAvailable ? `
+                <div class="temp-addon">
+                  <span class="temp-decimal" id="primary-temp-dec">,${pDec ?? '0'}</span>
+                  <span class="temp-unit">°C</span>
+                </div>
+              ` : ""}
             </div>
 
             <!-- Secondary temperature line: Setpoint if primary is current, otherwise Attuale -->
-            <div class="secondary-line" title="${primaryIsCurrent ? 'Temperatura impostata (Setpoint)' : 'Temperatura attuale'}">
+            <div class="secondary-line" title="${escapeHtml(primaryIsCurrent ? t.target_temp_tooltip : t.current_temp_tooltip)}">
               ${primaryIsCurrent ? ICONS.target : ICONS.thermometer}
-              <span>${secondaryFormatted} °C</span>
+              <span id="secondary-temp-val">${secondaryFormatted} °C</span>
             </div>
 
             <!-- Humidity under current temp -->
             ${humidity !== null ? `
-              <div class="humidity-badge" title="Umidità di zona">
+              <div class="humidity-badge" id="btn-humidity" data-entity="${escapeHtml(humidity.entity_id)}" title="${escapeHtml(t.humidity_tooltip)}">
                 ${ICONS.water_percent}
-                <span>${humidity}%</span>
+                <span>${humidity.value}%</span>
               </div>
             ` : ""}
           </div>
@@ -1240,15 +1571,15 @@ class ClimateCard extends HTMLElement {
             <div class="fixtures-container">
               ${balconiesList.map(b => `
                 <button class="fixture-pill ${b.isOpen ? 'alert-open' : ''}"
-                  data-entity="${b.entity_id}"
-                  title="${b.name || 'Balcone'}: ${b.isOpen ? 'Aperto' : 'Chiuso'}">
+                  data-entity="${escapeHtml(b.entity_id)}"
+                  title="${escapeHtml(b.name || t.balcony_default)}: ${escapeHtml(b.isOpen ? t.open_m : t.closed_m)}">
                   ${b.isOpen ? ICONS.balcony_open : ICONS.balcony_closed}
                 </button>
               `).join("")}
               ${windowsList.map(w => `
                 <button class="fixture-pill ${w.isOpen ? 'alert-open' : ''}"
-                  data-entity="${w.entity_id}"
-                  title="${w.name || 'Finestra'}: ${w.isOpen ? 'Aperta' : 'Chiusa'}">
+                  data-entity="${escapeHtml(w.entity_id)}"
+                  title="${escapeHtml(w.name || t.window_default)}: ${escapeHtml(w.isOpen ? t.open_f : t.closed_f)}">
                   ${w.isOpen ? ICONS.window_open : ICONS.window_closed}
                 </button>
               `).join("")}
@@ -1257,26 +1588,26 @@ class ClimateCard extends HTMLElement {
 
           <!-- Integrated Towel Heater (Termoarredo) Badge - Left corner -->
           ${heater ? `
-            <div class="heater-badge ${heater.isOn ? 'active' : ''}" id="btn-heater" title="${heater.name} (${heater.display}) - Clicca per accendere/spegnere">
+            <div class="heater-badge ${heater.isOn ? 'active' : ''}" id="btn-heater" title="${escapeHtml(heater.name)} (${escapeHtml(heater.display)}) - ${escapeHtml(t.towel_heater_tooltip)}">
               <span class="heater-icon">${ICONS.heating_coil}</span>
-              <span class="heater-text">${heater.display}</span>
+              <span class="heater-text">${escapeHtml(heater.display)}</span>
             </div>
           ` : ""}
 
           <!-- Integrated Zone Valve Badge - Right corner -->
           ${valve ? `
-            <div class="valve-badge" id="btn-valve" title="Valvola di zona (${valve.display})">
+            <div class="valve-badge" id="btn-valve" title="${escapeHtml(t.valve_tooltip)} (${escapeHtml(valve.display)})">
               <span class="valve-icon">${ICONS.valve}</span>
-              <span class="valve-text">${valve.display}</span>
+              <span class="valve-text">${escapeHtml(valve.display)}</span>
             </div>
           ` : ""}
 
           <!-- Stepper Buttons Row (- and + only) -->
           <div class="stepper-controls">
-            <button class="step-button" id="btn-minus" title="Riduci temperatura">
+            <button class="step-button" id="btn-minus" title="${escapeHtml(t.step_down_tooltip)}">
               ${ICONS.minus}
             </button>
-            <button class="step-button" id="btn-plus" title="Aumenta temperatura">
+            <button class="step-button" id="btn-plus" title="${escapeHtml(t.step_up_tooltip)}">
               ${ICONS.plus}
             </button>
           </div>
@@ -1285,43 +1616,64 @@ class ClimateCard extends HTMLElement {
         <!-- Segmented Features Row matching official hui-card-features -->
         ${(presets?.length > 0 || hvacModes?.length > 0) ? `
           <div class="features-row">
-            ${presets?.length > 0 ? `
-              <div class="features-pill-group">
-                ${presets.map(preset => {
-                  const norm = this._normalizeKey(preset);
-                  const isActive = currentPresetNorm === norm;
-                  const iconSvg = this._getPresetIcon(preset);
-                  const label = this._getPresetLabel(preset);
-                  return `
-                    <button class="feature-btn ${isActive ? 'active' : ''}"
-                      data-preset="${preset}"
-                      title="${label}">
-                      ${iconSvg}
-                    </button>
-                  `;
-                }).join("")}
-              </div>
-            ` : ""}
+            ${presets?.length > 0 ? (
+              presetStyle === "dropdown" ? `
+                <select class="feature-select" id="select-preset">
+                  ${presets.map(preset => {
+                    const norm = this._normalizeKey(preset);
+                    const isActive = currentPresetNorm === norm;
+                    const label = this._getPresetLabel(preset);
+                    return `<option value="${escapeHtml(preset)}" ${isActive ? "selected" : ""}>${escapeHtml(label)}</option>`;
+                  }).join("")}
+                </select>
+              ` : `
+                <div class="features-pill-group">
+                  ${presets.map(preset => {
+                    const norm = this._normalizeKey(preset);
+                    const isActive = currentPresetNorm === norm;
+                    const iconSvg = this._getPresetIcon(preset);
+                    const label = this._getPresetLabel(preset);
+                    return `
+                      <button class="feature-btn ${isActive ? 'active' : ''}"
+                        data-preset="${escapeHtml(preset)}"
+                        title="${escapeHtml(label)}">
+                        ${iconSvg}
+                      </button>
+                    `;
+                  }).join("")}
+                </div>
+              `
+            ) : ""}
 
-            ${hvacModes?.length > 0 ? `
-              <div class="features-pill-group" style="${presets?.length > 0 ? 'margin-top: 6px;' : ''}">
-                ${hvacModes.map(mode => {
-                  const isActive = modeInfo.hvacMode === mode;
-                  const iconSvg = this._getHvacIcon(mode);
-                  const label = this._getHvacLabel(mode);
-                  return `
-                    <button class="feature-btn ${isActive ? 'active' : ''}"
-                      data-hvac-mode="${mode}"
-                      title="${label}">
-                      ${iconSvg}
-                    </button>
-                  `;
-                }).join("")}
-              </div>
-            ` : ""}
+            ${hvacModes?.length > 0 ? (
+              hvacStyle === "dropdown" ? `
+                <select class="feature-select" id="select-hvac" style="${presets?.length > 0 ? 'margin-top: 6px;' : ''}">
+                  ${hvacModes.map(mode => {
+                    const isActive = modeInfo.hvacMode === mode;
+                    const label = this._getHvacLabel(mode);
+                    return `<option value="${escapeHtml(mode)}" ${isActive ? "selected" : ""}>${escapeHtml(label)}</option>`;
+                  }).join("")}
+                </select>
+              ` : `
+                <div class="features-pill-group" style="${presets?.length > 0 ? 'margin-top: 6px;' : ''}">
+                  ${hvacModes.map(mode => {
+                    const isActive = modeInfo.hvacMode === mode;
+                    const iconSvg = this._getHvacIcon(mode);
+                    const label = this._getHvacLabel(mode);
+                    return `
+                      <button class="feature-btn ${isActive ? 'active' : ''}"
+                        data-hvac-mode="${escapeHtml(mode)}"
+                        title="${escapeHtml(label)}">
+                        ${iconSvg}
+                      </button>
+                    `;
+                  }).join("")}
+                </div>
+              `
+            ) : ""}
           </div>
         ` : ""}
-      </div>
+      </ha-card>
     `;
 
     this._bindEvents();
@@ -1339,9 +1691,14 @@ class ClimateCard extends HTMLElement {
     root.getElementById("btn-minus")?.addEventListener("click", () => this._changeTempStep(-1));
     root.getElementById("btn-plus")?.addEventListener("click", () => this._changeTempStep(1));
 
-    // Reset button (stepper or header)
     // Reset button in header
     root.getElementById("btn-reset-header")?.addEventListener("click", () => this._triggerReset());
+
+    // Humidity More-Info
+    root.getElementById("btn-humidity")?.addEventListener("click", (ev) => {
+      const entityId = ev.currentTarget.getAttribute("data-entity") || this._config.humidity_entity || this._config.entity;
+      if (entityId) this._fireMoreInfo(entityId);
+    });
 
     // Valve More-Info
     root.getElementById("btn-valve")?.addEventListener("click", () => {
@@ -1350,7 +1707,7 @@ class ClimateCard extends HTMLElement {
 
     // Towel Heater (Termoarredo) Toggle
     root.getElementById("btn-heater")?.addEventListener("click", () => {
-      const entityId = this._config.towel_heater || this._config.heater_entity || this._config.termoarredo;
+      const entityId = this._config.towel_heater;
       if (entityId) this._toggleTowelHeater(entityId);
     });
 
@@ -1370,6 +1727,10 @@ class ClimateCard extends HTMLElement {
       });
     });
 
+    root.getElementById("select-preset")?.addEventListener("change", (ev) => {
+      if (ev.target.value) this._setPreset(ev.target.value);
+    });
+
     // Feature buttons (HVAC Modes)
     root.querySelectorAll(".feature-btn[data-hvac-mode]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1378,14 +1739,18 @@ class ClimateCard extends HTMLElement {
       });
     });
 
-    // Circular Slider dragging
+    root.getElementById("select-hvac")?.addEventListener("change", (ev) => {
+      if (ev.target.value) this._setHvacMode(ev.target.value);
+    });
+
+    // Circular Slider dragging (smooth in-place DOM updates, single service call on release)
     const sliderSvg = root.getElementById("circular-slider");
     if (sliderSvg) {
       const stateObj = this._hass?.states[this._config.entity];
       const minTemp = this._config.min_temp ?? stateObj?.attributes?.min_temp ?? 16;
       const maxTemp = this._config.max_temp ?? stateObj?.attributes?.max_temp ?? 30;
 
-      const handlePointer = (e) => {
+      const computePointerTemp = (e) => {
         const rect = sliderSvg.getBoundingClientRect();
         // 320x320 viewBox, center is (160, 160)
         const scale = 320 / rect.width;
@@ -1404,28 +1769,32 @@ class ClimateCard extends HTMLElement {
         }
 
         const frac = Math.max(0, Math.min(1, (mappedDeg - 135) / 270));
-        const newTemp = minTemp + frac * (maxTemp - minTemp);
-        this._setTemperature(newTemp);
+        return minTemp + frac * (maxTemp - minTemp);
       };
 
       sliderSvg.addEventListener("pointerdown", (e) => {
         // Prevent continuous touch drag if custom step events or disable_slider is configured
-        if (this._config.disable_slider || ((this._config.event_up || this._config.script_up) && this._config.disable_slider !== false)) {
+        if (this._config.disable_slider || (this._config.event_up && this._config.disable_slider !== false)) {
           return;
         }
         this._isDragging = true;
-        sliderSvg.setPointerCapture(e.pointerId);
-        handlePointer(e);
+        try { sliderSvg.setPointerCapture(e.pointerId); } catch (_) {}
+        const newTemp = computePointerTemp(e);
+        this._setTemperature(newTemp, false);
       });
 
       sliderSvg.addEventListener("pointermove", (e) => {
-        if (this._isDragging) handlePointer(e);
+        if (!this._isDragging) return;
+        const newTemp = computePointerTemp(e);
+        this._setTemperature(newTemp, false);
       });
 
       const stopDrag = (e) => {
-        if (this._isDragging) {
-          this._isDragging = false;
-          try { sliderSvg.releasePointerCapture(e.pointerId); } catch (_) {}
+        if (!this._isDragging) return;
+        this._isDragging = false;
+        try { sliderSvg.releasePointerCapture(e.pointerId); } catch (_) {}
+        if (this._tempPending !== null) {
+          this._setTemperature(this._tempPending, true);
         }
       };
 
@@ -1447,6 +1816,7 @@ class ClimateCardEditor extends HTMLElement {
     this._hass = hass;
     if (this._form) {
       this._form.hass = hass;
+      this._form.computeLabel = (s) => this._computeLabel(s);
     } else {
       this._init();
     }
@@ -1497,6 +1867,10 @@ class ClimateCardEditor extends HTMLElement {
         selector: { boolean: {} }
       },
       {
+        name: "disable_slider",
+        selector: { boolean: {} }
+      },
+      {
         name: "event_up",
         selector: { entity: { domain: ["script", "button", "switch", "input_button"] } }
       },
@@ -1512,20 +1886,9 @@ class ClimateCardEditor extends HTMLElement {
   }
 
   _computeLabel(schema) {
-    const labels = {
-      entity: "Entità Termostato (Climate) *",
-      name: "Titolo Card (Opzionale)",
-      valve_entity: "Entità Valvola di Zona (Opzionale)",
-      towel_heater: "Termoarredo Bagno (Switch/Clima Opzionale)",
-      windows: "Finestre (Binary Sensor)",
-      balconies: "Balconi / Portefinestre (Binary Sensor)",
-      humidity_entity: "Sensore Umidità (Opzionale)",
-      show_current_as_primary: "Temperatura Attuale grande al centro (e Setpoint sotto)",
-      event_up: "Azione Aumento Setpoint (+) [Script / Button / Switch]",
-      event_down: "Azione Diminuzione Setpoint (−) [Script / Button / Switch]",
-      event_reset: "Azione Reset Setpoint (↻) [Script / Button / Switch]"
-    };
-    return labels[schema.name] || schema.name;
+    const lang = getLang(this._hass, this._config?.language);
+    const t = TRANSLATIONS[lang] || TRANSLATIONS.it;
+    return t.editor[schema.name] || schema.name;
   }
 
   _init() {

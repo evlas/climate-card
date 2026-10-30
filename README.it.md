@@ -41,17 +41,20 @@ Molti termostati e cronotermostati **KNX** (e impianti di termoregolazione avanz
 
 ---
 
-## 📁 File del Progetto
-
-- [`climate-card.js`](file:///home/vito/Documenti/GitLocale/climate-card/climate-card.js): Il componente Web Component pronto per Home Assistant.
-- [`index.html`](file:///home/vito/Documenti/GitLocale/climate-card/index.html): Pagina di anteprima/test interattiva per simulare il comportamento in locale.
-
----
-
 ## 🚀 Installazione in Home Assistant
 
-### Metodo 1: Installazione Manuale (Consigliato)
-1. Copia il file [`climate-card.js`](file:///home/vito/Documenti/GitLocale/climate-card/climate-card.js) nella cartella `www` della tua configurazione di Home Assistant:
+### Metodo 1: HACS (Consigliato)
+1. Assicurati di avere [HACS](https://hacs.xyz/) installato su Home Assistant.
+2. Apri **HACS** > **Frontend**.
+3. Clicca sui tre puntini in alto a destra e seleziona **Repository personalizzati**.
+4. Inserisci:
+   - **Repository**: `https://github.com/evlas/climate-card`
+   - **Tipo**: `Dashboard` (o `Lovelace`)
+5. Clicca **Aggiungi**, cerca **Climate Card** e clicca **Scarica**.
+6. Ricarica la cache del browser.
+
+### Metodo 2: Installazione Manuale
+1. Copia il file [`climate-card.js`](climate-card.js) nella cartella `www` della tua configurazione di Home Assistant:
    ```bash
    /config/www/climate-card.js
    ```
