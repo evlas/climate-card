@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -64,7 +64,7 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
           VERSION="${TAG#v}"
-          python3 -c "import re; p='climate-card.js'; s=open(p).read(); s2=re.sub(r'const CARD_VERSION = \"[^\"]+\";', f'const CARD_VERSION = \"{VERSION}\";', s, count=1); open(p, 'w').write(s2)"
+          python3 -c "import re; p='climate-card.js'; s=open(p).read(); s2=re.sub(r'const CARD_VERSION = \"[^\"]+\";', 'const CARD_VERSION = \"$VERSION\";', s, count=1); open(p, 'w').write(s2)"
           if ! git diff --quiet climate-card.js; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
