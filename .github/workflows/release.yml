@@ -5,20 +5,95 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: "Create Release"
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Validate JavaScript and JSON"
+        run: |
+          node -c climate-card.js
+          python3 -c "import json; json.load(open('hacs.json'))"
+
+      - name: "Generate Changelog from Commits"
+        run: |
+          git fetch --tags --force 2>/dev/null || true
+          TAG_NAME="${{ github.ref_name }}"
+          if [ -z "$TAG_NAME" ]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+
+          echo "Generazione Changelog per: $TAG_NAME"
+          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG_NAME}^" 2>/dev/null || true)
+          TAG_MSG=$(git tag -l --format='%(contents)' "$TAG_NAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+          {
+            if [ -n "$TAG_MSG" ]; then
+              echo "### Note di rilascio"
+              echo "$TAG_MSG"
+              echo ""
+            fi
+
+            echo "### Modifiche"
+            if [ -n "$PREV_TAG" ]; then
+              echo "_Modifiche rispetto a \`$PREV_TAG\`:_"
+              echo ""
+              git log --no-merges --grep="^chore(release):" --invert-grep --pretty=format:"- %s (%h)" "$PREV_TAG..$TAG_NAME"
+            else
+              echo "_Primo rilascio:_"
+              echo ""
+              git log --no-merges --grep="^chore(release):" --invert-grep --pretty=format:"- %s (%h)" "$TAG_NAME"
+            fi
+            echo ""
+          } > CHANGELOG.md
+
+          cat CHANGELOG.md
+
+      - name: "Update CARD_VERSION from tag"
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          VERSION="${TAG#v}"
+          python3 -c "import re; p='climate-card.js'; s=open(p).read(); s2=re.sub(r'const CARD_VERSION = \"[^\"]+\";', f'const CARD_VERSION = \"{VERSION}\";', s, count=1); open(p, 'w').write(s2)"
+          if ! git diff --quiet climate-card.js; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            TAG_MSG=$(git tag -l --format='%(contents)' "$TAG" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            git add climate-card.js
+            git commit -m "chore(release): bump card version to $VERSION [skip ci]"
+            DEFAULT_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+            if [ -n "$DEFAULT_BRANCH" ]; then
+              git push origin "HEAD:refs/heads/$DEFAULT_BRANCH" || true
+            fi
+            if [ -n "$TAG_MSG" ]; then
+              git tag -fa "$TAG" -m "$TAG_MSG"
+            else
+              git tag -f "$TAG"
+            fi
+            git push origin "refs/tags/$TAG" --force
+          fi
 
       - name: "Create GitHub Release"
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           files: |
             climate-card.js
             hacs.json
-          generate_release_notes: true
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
